@@ -1,6 +1,6 @@
 import {useState, useEffect} from 'react';
 import storage from '../firebase_storage';
-import { Button, Header, Icon, Segment, Form, Dropdown } from 'semantic-ui-react'
+import { Button, Header, Icon, Segment, Form, Dropdown, Message } from 'semantic-ui-react'
 
 function Upload(props) {
 
@@ -10,9 +10,15 @@ const [value , setValue] = useState('');
 
 const [CA, setCA] = useState('');
 
+const [registration, setRegistration] = useState('');
+
+const [roll, setRoll] = useState('');
+
+const [details_check, setDetails_check] = useState(0)
 
 
 let fileReader;
+
 
 
 const options=[]
@@ -71,12 +77,71 @@ if(doc==='')
   return;
 if(value==='')
   return;
-storage.ref(`/documents/${props.dataParentToChild}/${value}`).put(doc)
-.then(function (snapshot) {
-  alert('Successfully Uploaded Document')
-  window.location.reload()
-}
-  )
+
+
+  new Promise((resolve, reject)=>
+  {
+      
+      fetch(`api/doc`)
+      .then(result => result.json()
+      )
+      .then(json => 
+          {
+
+              resolve(json)
+
+              var list = JSON.stringify(json).split('},')
+
+              var count=0
+
+              
+              
+              for(count=0; count<list.length; count++)
+              {
+
+                
+                  var string = list[count]
+                 
+                 if(string.includes(registration) && string.includes(roll)){
+
+                  setDetails_check(1)
+                 }
+                  
+
+                }
+               
+                
+                if(count===list.length && details_check==0)
+                {
+                  setDetails_check(2)
+                }
+
+              
+
+          }
+              
+      )
+      .then( value=>
+        {
+          console.log(details_check);
+          if(details_check===1){
+            storage.ref(`/documents/${props.dataParentToChild}/${value}`).put(doc)
+            .then(function (snapshot) {
+            
+              console.log(11);
+            
+            // window.location.reload()
+          }
+            )
+          }
+          
+
+        }
+      )
+      .catch(err => reject(err))
+  })
+
+  
 
 }
 
@@ -110,18 +175,43 @@ const handledropdown =(e)=>
   setCA(e.target.innerHTML.replace('<span class="text">',''))
 }
 
+const handleRegistrationChange =(e) =>
+{
+  setRegistration(e.target.value)
+}
 
-
+const handleRollChange =(e) =>
+{
+  setRoll(e.target.value)
+}
 
 let button
 
-if(CA==='' || doc==='' || value==='')
+if(CA==='' || doc==='' || value==='' || registration==='' || roll==='')
 {
   button = <Button disabled onClick={upload}>Upload</Button>
 }
 else
 {
   button = <Button onClick={upload}>Upload</Button>
+}
+
+let message
+
+if(details_check===1)
+{
+  message=<div><Message
+  success
+  header='File was Successfully Uploaded'
+  content='You have successfully uploaded the file'
+/></div>
+}
+else if(details_check===2){
+    message = <div><Message negative>
+            <Message.Header>Uploading Denyed</Message.Header>
+            <p>Check the credentials again</p>
+          </Message>
+          </div>
 }
 
 return (
@@ -151,10 +241,19 @@ return (
           />
          
         </Form.Group>
+        <Form.Group widths='equal'>
+          <Form.Input fluid label='Registration No.' placeholder='Registration Number' value ={registration} onChange={handleRegistrationChange}/>
+          <Form.Input fluid label='Roll No.' placeholder='Roll Number' value ={roll} onChange={handleRollChange}/>
+          
+        </Form.Group>
       </Form>
       <Dropdown placeholder='Select CA' clearable options={options} selection onChange={handledropdown}/>
       <br/>
 	{button}
+
+  <br/>
+
+  {message}
   </Segment>
 	</div>
 );

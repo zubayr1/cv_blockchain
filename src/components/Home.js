@@ -98,6 +98,7 @@ export default function Home(props) {
   }
   else{
     uploaddiv = <Upload dataParentToChild = {currentUser.email}/>
+    
   }
 
     
