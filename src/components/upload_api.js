@@ -1,14 +1,15 @@
+
 const baseAPI = '/api';
 
 
-const profAPI ={
+const UpldAPI ={
     get(email)
     {
         
         new Promise((resolve, reject)=>
         {
             
-            fetch(`${baseAPI}/doc`)
+            fetch(`${baseAPI}/getupld`)
             .then(result => result.json()
             )
             .then(json => 
@@ -35,13 +36,13 @@ const profAPI ={
         
     },
     
-    create(prof)
+    create(upld)
     {
         return new Promise((resolve, reject) =>
         {
-            fetch(`${baseAPI}/prof`, {
+            fetch(`${baseAPI}/upld`, {
                 method: 'POST',
-                body: (prof),
+                body: (upld),
                 headers:
                 {
                     Accept: 'application/json',
@@ -52,12 +53,11 @@ const profAPI ={
             .then(json => resolve(json))
             .catch(err =>
                 {
+                    console.log(err);
                     reject(err)
                 })
         })
     }
 }
 
-
-
-export  default profAPI;
+export  default UpldAPI;

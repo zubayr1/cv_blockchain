@@ -6,6 +6,7 @@ import {useAuth} from '../AuthContext'
 
 import Profile from './profile'
 import Upload from './Upload'
+import Notification_CA from './Notification_CA'
 
 
 export default function Home(props) {
@@ -18,11 +19,17 @@ export default function Home(props) {
 
     const [isprofilesetinDB, setIsProfileSetInDB] = useState(0)
 
+    const [registration, setregistration] = useState(0)
+
+    const [roll, setroll] = useState(0)
+
+    const [type, settype] = useState(0)
 
     
       useEffect(()=>
       {
-         //check if exists...
+    
+       
        new Promise((resolve, reject)=>
        {
            
@@ -33,22 +40,73 @@ export default function Home(props) {
                {
                    resolve(json)
 
-                   if(json.some(item => item.email === currentUser.email)===true)
+                   var list = JSON.stringify(json).split('},')
+
+                   var count=0
+
+                   
+                   for(count=0; count<list.length; count++)
                    {
-                    //  console.log('true');
+                     if(list[count].includes('st') && list[count].includes(currentUser.email))
+                     {
 
-                    setIsProfileSetInDB(1)
+                       var string = list[count].replace(']','').replace('[','')
+
+                      //  console.log(string);
+                      if(!string.endsWith('}'))
+                      {
+                        string = string+'}'
+                      }
+                       var final_json = JSON.parse(string)
+
+
+
+                       setregistration(final_json.registration)
+                       setroll(final_json.roll)
+
+                       settype(final_json.usertype)
+
+
+                      }
+
+                      
+
                    }
-
-                  
+                   
 
                }
                    
            )
            .catch(err => reject(err))
        })
-       // return false
-      })
+
+            //check if exists...
+            new Promise((resolve, reject)=>
+            {
+                
+                fetch(`api/doc`)
+                .then(result => result.json()
+                )
+                .then(json => 
+                    {
+                        resolve(json)
+     
+                        if(json.some(item => item.email === currentUser.email)===true)
+                        {
+                         //  console.log('true');
+     
+                         setIsProfileSetInDB(1)
+                        }
+     
+                       
+     
+                    }
+                        
+                )
+                .catch(err => reject(err))
+            }, [])
+     
+        }, [])
        
     
 
@@ -87,6 +145,9 @@ export default function Home(props) {
 
   let uploaddiv
 
+  let notificationdiv
+
+  if(type==='st'){
   if(isprofilesetinDB===0)
   {
     uploaddiv=<div>
@@ -97,9 +158,25 @@ export default function Home(props) {
     </div>
   }
   else{
-    uploaddiv = <Upload dataParentToChild = {currentUser.email}/>
+    var string = currentUser.email+ " "+ registration+ " "+ roll
+    uploaddiv = <Upload dataParentToChild = {string}/>
     
   }
+}
+else if(type==='ca')
+{
+  uploaddiv=<div>
+      <Segment>
+        <h2>Upload for CA</h2>
+        <h4>Uploading available from notification</h4>
+      </Segment>
+    </div>
+
+
+  notificationdiv = <Notification_CA dataParentToChild = {currentUser.email}/>
+
+
+}
 
     
     return (
@@ -149,7 +226,7 @@ export default function Home(props) {
 
         </Grid>
 
-
+        {notificationdiv}
         </div>
     )
 }

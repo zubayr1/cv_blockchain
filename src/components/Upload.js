@@ -2,7 +2,16 @@ import {useState, useEffect} from 'react';
 import storage from '../firebase_storage';
 import { Button, Header, Icon, Segment, Form, Dropdown, Message } from 'semantic-ui-react'
 
+import { sha256, } from 'js-sha256';
+
+import UpldAPI from './upload_api'
+
+import Firebase from 'firebase';
+
+
+
 function Upload(props) {
+
 
 const [doc , setDoc] = useState('');
 
@@ -10,15 +19,15 @@ const [value , setValue] = useState('');
 
 const [CA, setCA] = useState('');
 
-const [registration, setRegistration] = useState('');
+const [check, setcheck] = useState(0)
 
-const [roll, setRoll] = useState('');
 
-const [details_check, setDetails_check] = useState(0)
+const [HASHEDCONTENT, setHASHEDCONTENT] = useState('')
 
 
 let fileReader;
 
+var list = props.dataParentToChild.split(' ')
 
 
 const options=[]
@@ -79,68 +88,34 @@ if(value==='')
   return;
 
 
-  new Promise((resolve, reject)=>
-  {
-      
-      fetch(`api/doc`)
-      .then(result => result.json()
-      )
-      .then(json => 
-          {
-
-              resolve(json)
-
-              var list = JSON.stringify(json).split('},')
-
-              var count=0
-
-              
-              
-              for(count=0; count<list.length; count++)
-              {
-
-                
-                  var string = list[count]
-                 
-                 if(string.includes(registration) && string.includes(roll)){
-
-                  setDetails_check(1)
-                 }
-                  
-
-                }
-               
-                
-                if(count===list.length && details_check==0)
-                {
-                  setDetails_check(2)
-                }
-
-              
-
-          }
-              
-      )
-      .then( value=>
-        {
-          console.log(details_check);
-          if(details_check===1){
-            storage.ref(`/documents/${props.dataParentToChild}/${value}`).put(doc)
-            .then(function (snapshot) {
+  setcheck(3)
+  storage.ref(`/documents/${list[0]}/${value}`).put(doc)
             
-              console.log(11);
-            
-            // window.location.reload()
-          }
-            )
-          }
-          
 
-        }
-      )
-      .catch(err => reject(err))
+             
+  const id = Math.floor(Math.random() * 1000000)
+  UpldAPI.create(`{"id": "${id}", "registration":"${list[1]}", "roll":"${list[2]}", "catype":"${CA}", "doctype":"${value}", "check":"false", "hash":"${HASHEDCONTENT}"}`)
+  .then(upld =>{
+    console.log('success', upld);
+
+    var rgstn = list[1]
+
+    var rl = list[2]
+
+    var PATH = '/'+ CA + '/'+ rgstn+'/'+ value
+
+    Firebase.database()
+      .ref(PATH)
+      .set({
+        id,
+        rgstn,
+        rl,
+        value
+      });
+
+    setcheck(1)
   })
-
+  
   
 
 }
@@ -160,8 +135,13 @@ const handleFileChosen = (file) => {
 
 const handleFileRead = (e) => {
 const content = fileReader.result;
-// console.log(content)
 // … do something with the 'content' …
+
+setHASHEDCONTENT(sha256(content));
+
+
+
+
 };
 
 const handleChange = (e) =>
@@ -172,22 +152,14 @@ const handleChange = (e) =>
 
 const handledropdown =(e)=>
 {
-  setCA(e.target.innerHTML.replace('<span class="text">',''))
+  setCA(e.target.innerHTML.replace('<span class="text">','').replace('</span>', ''))
 }
 
-const handleRegistrationChange =(e) =>
-{
-  setRegistration(e.target.value)
-}
 
-const handleRollChange =(e) =>
-{
-  setRoll(e.target.value)
-}
 
 let button
 
-if(CA==='' || doc==='' || value==='' || registration==='' || roll==='')
+if(CA==='' || doc==='' || value==='' )
 {
   button = <Button disabled onClick={upload}>Upload</Button>
 }
@@ -198,20 +170,26 @@ else
 
 let message
 
-if(details_check===1)
+if(check===1)
 {
-  message=<div><Message
-  success
-  header='File was Successfully Uploaded'
-  content='You have successfully uploaded the file'
-/></div>
+  message=
+  <Message positive>
+  <Message.Header>SUCCESS</Message.Header>
+  <p>
+   The file is successfully uploaded
+  </p>
+</Message>
 }
-else if(details_check===2){
-    message = <div><Message negative>
-            <Message.Header>Uploading Denyed</Message.Header>
-            <p>Check the credentials again</p>
-          </Message>
-          </div>
+else if(check===3)
+{
+  message =
+  <Message icon>
+    <Icon name='circle notched' loading />
+    <Message.Content>
+      <Message.Header>Just a moment</Message.Header>
+      Uploading on Progress...
+    </Message.Content>
+  </Message>
 }
 
 return (
@@ -242,8 +220,8 @@ return (
          
         </Form.Group>
         <Form.Group widths='equal'>
-          <Form.Input fluid label='Registration No.' placeholder='Registration Number' value ={registration} onChange={handleRegistrationChange}/>
-          <Form.Input fluid label='Roll No.' placeholder='Roll Number' value ={roll} onChange={handleRollChange}/>
+          <Form.Input fluid label='Registration No.' placeholder='Registration Number' value ={list[1]} disabled/>
+          <Form.Input fluid label='Roll No.' placeholder='Roll Number' value ={list[2]} disabled/>
           
         </Form.Group>
       </Form>
@@ -254,6 +232,7 @@ return (
   <br/>
 
   {message}
+
   </Segment>
 	</div>
 );
