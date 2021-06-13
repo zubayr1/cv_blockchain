@@ -226,6 +226,7 @@ else if(type==='ca')
 
         </Grid>
 
+        <br/>
         {notificationdiv}
         </div>
     )
