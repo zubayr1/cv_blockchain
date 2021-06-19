@@ -31,4 +31,9 @@ router.post('/upld', function(req, res, next) {
 })
 
 
+router.put('/upld', function(req, res, next) {
+  uploadService.update(req, res);
+})
+
+
 module.exports = router;

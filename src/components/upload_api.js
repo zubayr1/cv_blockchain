@@ -57,7 +57,35 @@ const UpldAPI ={
                     reject(err)
                 })
         })
+    },
+
+    update(upld)
+    {
+        return new Promise((resolve, reject) =>
+        {
+            fetch(`${baseAPI}/upld`, {
+                method: 'PUT',
+                body: (upld),
+                headers:
+                {
+                    Accept: 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(result => result.json())
+            .then(json => resolve(json))
+            .catch(err =>
+                {
+                    console.log(err);
+                    reject(err)
+                })
+        })
     }
+    
+
+    
+
+
 }
 
 export  default UpldAPI;

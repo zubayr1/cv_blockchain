@@ -173,7 +173,8 @@ else if(type==='ca')
     </div>
 
 
-  notificationdiv = <Notification_CA dataParentToChild = {currentUser.email}/>
+  
+  notificationdiv = <Notification_CA dataParentToChild = {currentUser.email }/>
 
 
 }
