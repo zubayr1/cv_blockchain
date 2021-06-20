@@ -7,6 +7,7 @@ import {useAuth} from '../AuthContext'
 import Profile from './profile'
 import Upload from './Upload'
 import Notification_CA from './Notification_CA'
+import NotificationSt from './NotificationSt'
 
 
 export default function Home(props) {
@@ -148,6 +149,8 @@ export default function Home(props) {
   let notificationdiv
 
   if(type==='st'){
+    notificationdiv = <NotificationSt dataParentToChild = {currentUser.email }/>
+    
   if(isprofilesetinDB===0)
   {
     uploaddiv=<div>
