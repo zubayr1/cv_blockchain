@@ -8,6 +8,7 @@ import Profile from './profile'
 import Upload from './Upload'
 import Notification_CA from './Notification_CA'
 import NotificationSt from './NotificationSt'
+import Blockchain from './Blockchain'
 
 
 export default function Home(props) {
@@ -186,6 +187,7 @@ else if(type==='ca')
     return (
         <div>
             <div className='mg'>
+              
      <Menu  secondary>
            
            <Image src={logo}  circular size='mini'/>
@@ -232,6 +234,8 @@ else if(type==='ca')
 
         <br/>
         {notificationdiv}
+        <br/>
+        <Blockchain  dataParentToChild = {currentUser.email }/>
         </div>
     )
 }
