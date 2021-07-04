@@ -10,9 +10,14 @@ export default function NotificationSt(props) {
 
     let STRING =[]
 
+    let OWNSTRING =[]
+
     const [dbinfo , setdbinfo] = useState([]);
+    const [owndbinfo , setowndbinfo] = useState([]);
 
     const [stRegistration, setSTregistration] = useState('')
+
+    const [stRoll, setSTRoll] = useState('')
 
 
     const handleuploadClick = () =>
@@ -31,6 +36,111 @@ export default function NotificationSt(props) {
 
     useEffect(()=>
     {
+
+
+        new Promise((resolve, reject)=>
+        {
+            var reg
+            var rl
+            fetch(`api/doc`)
+            .then(result => result.json()
+            )
+            .then(json => 
+                {
+                    resolve(json)
+
+                    var list = JSON.stringify(json).split('},')
+
+                   var count=0
+
+                   for(count=0; count<list.length; count++)
+                   {
+                     if(list[count].includes('st') && list[count].includes(STemail))
+                     {
+                        var string = list[count].replace(']','').replace('[','')
+
+                        //  console.log(string);
+                        if(!string.endsWith('}'))
+                        {
+                          string = string+'}'
+                        }
+                         var final_json = JSON.parse(string)
+
+                         reg = final_json.registration
+
+                         rl = final_json.roll
+                    }
+                }
+            })
+            .then(json => 
+                {
+            fetch(`api/getupld`)
+            .then(result => result.json()
+            )
+            .then(json => 
+                {
+                    resolve(json)
+
+                    var list = JSON.stringify(json).split('},')
+
+                   var count=0
+
+                   for(count=0; count<list.length; count++)
+                   {
+                      var string = list[count].replace(']','').replace('[','')
+
+                        //  console.log(string);
+                        if(!string.endsWith('}'))
+                        {
+                          string = string+'}'
+                        }
+                         var final_json = JSON.parse(string)
+  
+                        //  console.log(final_json);
+                        if(final_json.registration==reg && final_json.roll == rl)
+                        {
+
+                            
+
+                            if(final_json.check==='VERIFICATION DONE')
+                            {
+                                OWNSTRING.push(<div><Segment  raised> <p style={{ color: 'green' }}>{"ID: "+final_json.id+ ' Registration: '+ final_json.registration+ " Roll: "+ final_json.roll + ' Certificate Type: '+  final_json.doctype + " Hash Value: " + final_json.hash + " Check: " + final_json.check}</p>  </Segment> </div>)
+    
+                            }
+                            else if(final_json.check==='VERIFICATION FAILED')
+                            {
+                                OWNSTRING.push(<div><Segment raised> <p style={{ color: 'red' }}>{"ID: "+final_json.id+ ' Registration: '+ final_json.registration+ " Roll: "+ final_json.roll +' Certificate Type: '+  final_json.doctype + " Hash Value: " + final_json.hash + " Check: " + final_json.check}</p>  </Segment> </div>)
+    
+                            }
+                            else
+                            {
+                                OWNSTRING.push(<div><Segment raised> <p style={{ color: 'yellow' }}>{"ID: "+final_json.id+ ' Registration: '+ final_json.registration+ " Roll: "+ final_json.roll +' Certificate Type: '+  final_json.doctype + " Hash Value: " + final_json.hash + " Check: " + final_json.check}</p>  </Segment> </div>)
+    
+                            }
+                        }
+
+                       
+                       
+
+
+                     
+
+                    }
+
+                    setowndbinfo(OWNSTRING)
+
+                    
+
+                })
+
+            })
+                
+            }
+        )
+
+
+
+
         new Promise((resolve, reject)=>
         {
             
@@ -63,6 +173,8 @@ export default function NotificationSt(props) {
                          var PATH = '/'+ final_json.registration
 
                          setSTregistration(final_json.registration)
+
+                         setSTRoll(final_json.roll)
 
                          
                              let ref = Firebase.database().ref(PATH);
@@ -129,8 +241,11 @@ export default function NotificationSt(props) {
 
     return (
         <div>
-             
+            <h3>Private Information</h3>
+             {owndbinfo}
              <Menu>
+
+                 
              
             <Card>
 
