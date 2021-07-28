@@ -35,7 +35,6 @@ const options=[]
 useEffect(()=>
       {
          //get only ca...
-    
       
         new Promise((resolve, reject)=>
        {
@@ -46,27 +45,36 @@ useEffect(()=>
            .then(json => 
                {
                    resolve(json)
+                   
 
                    var list = JSON.stringify(json).split('},')
 
                    var count=0
 
-                   
                   var dropdownlist_count=0
                    for(count=0; count<list.length; count++)
                    {
+                     
                      if(list[count].includes('ca'))
                      {
-                      dropdownlist_count+=1
+                      
 
-                       var string = list[count].replace(']','')
+                       var string = list[count].replace(']','').replace('[','')
                       if(!string.endsWith('}'))
                       {
                         string = string+'}'
                       }
                        var final_json = JSON.parse(string)
-                       options.push({key:dropdownlist_count, text: final_json.name, value: dropdownlist_count})
+
+
+                       if(final_json.usertype==='ca'){
+                        dropdownlist_count+=1
+                        options.push({key:dropdownlist_count, text: final_json.name, value: dropdownlist_count})
+
+                       }
+
                      }
+
                    }
                    
 
